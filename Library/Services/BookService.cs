@@ -120,5 +120,50 @@
             await this.dbContext.Books.AddAsync(book);
             await this.dbContext.SaveChangesAsync();
         }
+
+        public async Task<AddBookViewModel?> GetBookByIdForEditAsync(int id)
+        {
+            var categories = await dbContext.Categories
+                .Select(c => new CategoryViewMode
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                }).ToListAsync();
+                var bookModel = new AddBookViewModel
+                {
+                    Categories = categories,
+                };
+            var book = await this.dbContext.Books
+                .Where(b => b.Id == id)
+                .Select(b => new AddBookViewModel
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Rating = b.Rating.ToString(),
+                    Author = b.Author,
+                    Url = b.ImageUrl,
+                    CategoryId = b.CategoryId,
+                    Description = b.Description,
+                    Categories = categories
+                }).FirstOrDefaultAsync();
+            return book;
+        }
+
+        public async Task EditBookAsync(AddBookViewModel model, int Id)
+        {
+            var book = await dbContext.Books.FindAsync(Id);
+            if (book != null)
+            {
+                book.Title = model.Title;
+                book.Rating = decimal.Parse(model.Rating);
+                book.Author = model.Author;
+                book.ImageUrl = model.Url;
+                book.CategoryId = model.CategoryId;
+                book.Description = model.Description;
+                await this.dbContext.SaveChangesAsync();
+            }
+
+
+        }
     }
 }

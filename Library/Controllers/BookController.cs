@@ -71,5 +71,34 @@
             await bookService.AddBookAsync(model);
             return RedirectToAction("All");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int Id)
+        {
+            AddBookViewModel? book = await bookService.GetBookByIdForEditAsync(Id);
+            if(book == null)
+            {
+                return RedirectToAction("All");
+            }
+            return View(book);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(int Id, AddBookViewModel model)
+        {
+            decimal rate;
+            if (!decimal.TryParse(model.Rating, out rate) || rate < 0 || rate > 10)
+            {
+                ModelState.AddModelError(nameof(model.Rating), "Rating must be a number between 0 and 10");
+                return View(model);
+            }
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            await bookService.EditBookAsync(model, Id);
+            return RedirectToAction("All");
+        }
     }
 }
